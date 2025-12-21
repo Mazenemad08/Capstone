@@ -28,6 +28,10 @@ import 'pages/meetings/meeting_list_page.dart';
 import 'pages/meetings/single_meeting_page.dart';
 import 'pages/meetings/create_meeting_page.dart';
 import 'pages/reports/single_report_page.dart';
+import 'pages/admin/admin_dashboard_page.dart';
+import 'pages/admin/user_management_page.dart';
+import 'pages/admin/create_user_page.dart';
+import 'pages/admin/academic_year_management_page.dart';
 
 GoRouter buildRouter(AppState appState) {
   return GoRouter(
@@ -97,7 +101,9 @@ GoRouter buildRouter(AppState appState) {
                     name: 'course-report',
                     builder: (context, state) {
                       final id = state.pathParameters['courseId']!;
-                      final payload = state.extra is GeneratedReportPayload ? state.extra as GeneratedReportPayload : null;
+                      final payload = state.extra is GeneratedReportPayload
+                          ? state.extra as GeneratedReportPayload
+                          : null;
                       return CourseReportPage(courseId: id, payload: payload);
                     },
                   ),
@@ -145,8 +151,13 @@ GoRouter buildRouter(AppState appState) {
                     builder: (context, state) {
                       final id = state.pathParameters['programId']!;
                       final program = context.read<AppState>().findProgram(id);
-                      final profile = context.read<AppState>().findProgramProfile(id);
-                      return CreateProgramPage(existingProgram: program, existingProfile: profile);
+                      final profile = context
+                          .read<AppState>()
+                          .findProgramProfile(id);
+                      return CreateProgramPage(
+                        existingProgram: program,
+                        existingProfile: profile,
+                      );
                     },
                   ),
                   GoRoute(
@@ -251,6 +262,39 @@ GoRouter buildRouter(AppState appState) {
               return ModerationRequestPage(requestId: id);
             },
           ),
+          GoRoute(
+            path: '/admin',
+            name: 'admin',
+            builder: (context, state) => const AdminDashboardPage(),
+            routes: [
+              GoRoute(
+                path: 'users',
+                name: 'admin-users',
+                builder: (context, state) => const UserManagementPage(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    name: 'admin-create-user',
+                    builder: (context, state) => const CreateUserPage(),
+                  ),
+                  GoRoute(
+                    path: ':userId/edit',
+                    name: 'admin-edit-user',
+                    builder: (context, state) {
+                      final id = state.pathParameters['userId']!;
+                      final user = context.read<AppState>().findUser(id);
+                      return CreateUserPage(existingUser: user);
+                    },
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: 'academic-year',
+                name: 'admin-academic-year',
+                builder: (context, state) => const AcademicYearManagementPage(),
+              ),
+            ],
+          ),
         ],
       ),
     ],
@@ -264,6 +308,7 @@ String _titleForRoute(String location) {
   if (location.startsWith('/meetings')) return 'Meetings';
   if (location.startsWith('/reports')) return 'Reports';
   if (location.startsWith('/moderation')) return 'Moderation';
+  if (location.startsWith('/admin')) return 'Administration';
   return 'Dashboard';
 }
 

@@ -55,11 +55,11 @@ class CourseDetailPage extends StatelessWidget {
                 icon: Icons.edit,
               ),
               PrimaryButton(
-                label: 'Add Evaluation',
+                label: 'Add Course Reflection',
                 onPressed: () => _showAddEvaluationDialog(context, course.id),
               ),
               PrimaryButton(
-                label: 'View Evaluations',
+                label: 'View Course Reflections',
                 onPressed: () => context.go('/courses/${course.id}/evaluations'),
                 icon: Icons.list_alt,
               ),
@@ -100,7 +100,7 @@ class CourseDetailPage extends StatelessWidget {
       context: context,
       builder: (dialogCtx) {
         return AlertDialog(
-          title: const Text('Create Course Report'),
+          title: const Text('Generate Course Report'),
           content: SizedBox(
             width: 460,
             child: Column(

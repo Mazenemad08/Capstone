@@ -16,11 +16,19 @@ class HomePage extends StatelessWidget {
     final stats = [
       ('Total Courses', state.totalCourses.toString(), '+2 from last month'),
       ('Total Programs', state.totalPrograms.toString(), '+1 from last month'),
-      ('Open Issues', state.openIssues.toString(), 'Monitoring quality actions'),
+      (
+        'Open Issues',
+        state.openIssues.toString(),
+        'Monitoring quality actions',
+      ),
       ('Upcoming Meetings', state.upcomingMeetings.toString(), 'Next 30 days'),
     ];
-    final sent = state.moderationRequests.where((m) => m.direction == 'sent').toList();
-    final received = state.moderationRequests.where((m) => m.direction == 'received').toList();
+    final sent = state.moderationRequests
+        .where((m) => m.direction == 'sent')
+        .toList();
+    final received = state.moderationRequests
+        .where((m) => m.direction == 'received')
+        .toList();
 
     return SingleChildScrollView(
       child: Column(
@@ -46,7 +54,10 @@ class HomePage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Moderation', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                const Text(
+                  'Moderation',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'Track reports you sent for moderation and requests awaiting your action.',
@@ -56,9 +67,21 @@ class HomePage extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _ModerationList(title: 'Sent', items: sent, sentList: true)),
+                    Expanded(
+                      child: _ModerationList(
+                        title: 'Sent',
+                        items: sent,
+                        sentList: true,
+                      ),
+                    ),
                     const SizedBox(width: 16),
-                    Expanded(child: _ModerationList(title: 'Received', items: received, sentList: false)),
+                    Expanded(
+                      child: _ModerationList(
+                        title: 'Received',
+                        items: received,
+                        sentList: false,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -69,7 +92,10 @@ class HomePage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
-                Text('Recent activity', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                Text(
+                  'Recent activity',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                ),
                 SizedBox(height: 8),
                 Text('All dummy data, showing how a feed could look.'),
               ],
@@ -82,7 +108,11 @@ class HomePage extends StatelessWidget {
 }
 
 class _ModerationList extends StatelessWidget {
-  const _ModerationList({required this.title, required this.items, required this.sentList});
+  const _ModerationList({
+    required this.title,
+    required this.items,
+    required this.sentList,
+  });
 
   final String title;
   final List<ModerationRequest> items;
@@ -132,31 +162,65 @@ class _ModerationList extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: statusColor.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           m.status.toUpperCase(),
-                          style: TextStyle(color: statusColor, fontWeight: FontWeight.w700, fontSize: 12),
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  if (course != null) Text('${course.code} • ${course.title}', style: const TextStyle(color: Colors.black87)),
-                  Text(m.reportSummary, style: const TextStyle(color: Colors.black54)),
+                  if (course != null)
+                    Text(
+                      '${course.code} • ${course.title}',
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                  Text(
+                    m.reportSummary,
+                    style: const TextStyle(color: Colors.black54),
+                  ),
                   const SizedBox(height: 8),
                   if (sentList)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: PrimaryButton(
-                        label: m.status == 'accepted' ? 'Download syllabus' : 'View status',
-                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(m.status == 'accepted' ? 'Downloading syllabus...' : 'Still pending.')),
+                    Row(
+                      children: [
+                        PrimaryButton(
+                          label: m.status == 'accepted'
+                              ? 'Download syllabus'
+                              : 'View status',
+                          onPressed: () =>
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    m.status == 'accepted'
+                                        ? 'Downloading syllabus...'
+                                        : 'Still pending.',
+                                  ),
+                                ),
+                              ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        PrimaryButton(
+                          label: 'Check Moderation Table',
+                          onPressed: () =>
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Checking moderation table...'),
+                                ),
+                              ),
+                        ),
+                      ],
                     )
                   else
                     Align(

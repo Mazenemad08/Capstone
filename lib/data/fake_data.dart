@@ -42,12 +42,75 @@ class CourseClo {
   final String description;
   final String descriptor;
   final String category;
+  final String nqfLevel;
 
   const CourseClo({
     required this.code,
     required this.description,
     required this.descriptor,
     this.category = '',
+    this.nqfLevel = 'Level 7',
+  });
+}
+
+@immutable
+class User {
+  final String id;
+  final String email;
+  final String firstName;
+  final String lastName;
+  final String role; // 'admin', 'chair', 'moderator', 'faculty'
+  final String? department;
+  final bool isActive;
+  final String createdAt;
+
+  const User({
+    required this.id,
+    required this.email,
+    required this.firstName,
+    required this.lastName,
+    required this.role,
+    this.department,
+    this.isActive = true,
+    required this.createdAt,
+  });
+
+  String get fullName => '$firstName $lastName';
+}
+
+@immutable
+class AcademicYear {
+  final String id;
+  final String name; // e.g., '2023-2024'
+  final String startDate;
+  final String endDate;
+  final bool isCurrent;
+  final List<AcademicSemester> semesters;
+
+  const AcademicYear({
+    required this.id,
+    required this.name,
+    required this.startDate,
+    required this.endDate,
+    required this.isCurrent,
+    required this.semesters,
+  });
+}
+
+@immutable
+class AcademicSemester {
+  final String id;
+  final String name; // e.g., 'Fall 2023', 'Spring 2024'
+  final String startDate;
+  final String endDate;
+  final bool isCurrent;
+
+  const AcademicSemester({
+    required this.id,
+    required this.name,
+    required this.startDate,
+    required this.endDate,
+    required this.isCurrent,
   });
 }
 
@@ -404,7 +467,8 @@ class FakeData {
       id: 'c1',
       code: 'COSC248',
       title: 'Algorithms & Complexity',
-      description: 'Study of algorithm design, complexity analysis, and optimization patterns.',
+      description:
+          'Study of algorithm design, complexity analysis, and optimization patterns.',
       programId: 'p1',
       instructor: 'Dr. Hana Ibrahim',
       semester: 'Fall 2024',
@@ -412,20 +476,24 @@ class FakeData {
       clos: [
         CourseClo(
           code: 'A1',
-          description: 'Demonstrate advanced knowledge of algorithm design and complexity analysis.',
+          description:
+              'Demonstrate advanced knowledge of algorithm design and complexity analysis.',
           descriptor: 'Knowledge – Theoretical Understanding (Level 7)',
           category: 'A. Knowledge',
         ),
         CourseClo(
           code: 'A2',
-          description: 'Apply design techniques (divide and conquer, DP, greedy) to solve problems.',
+          description:
+              'Apply design techniques (divide and conquer, DP, greedy) to solve problems.',
           descriptor: 'Knowledge – Applied Knowledge (Level 7)',
           category: 'A. Knowledge',
         ),
         CourseClo(
           code: 'B1',
-          description: 'Analyze trade-offs and select efficient data structures/algorithms.',
-          descriptor: 'Skills – Generic Problem Solving & Analytical Skills (Level 7)',
+          description:
+              'Analyze trade-offs and select efficient data structures/algorithms.',
+          descriptor:
+              'Skills – Generic Problem Solving & Analytical Skills (Level 7)',
           category: 'B. Skills',
         ),
       ],
@@ -468,7 +536,8 @@ class FakeData {
       id: 'c2',
       code: 'BUSN210',
       title: 'Principles of Management',
-      description: 'Fundamentals of management, leadership, and organizational behavior.',
+      description:
+          'Fundamentals of management, leadership, and organizational behavior.',
       programId: 'p2',
       instructor: 'Prof. Laila Ahmed',
       semester: 'Spring 2025',
@@ -476,7 +545,8 @@ class FakeData {
       clos: [
         CourseClo(
           code: 'A1',
-          description: 'Explain core management functions and leadership theories.',
+          description:
+              'Explain core management functions and leadership theories.',
           descriptor: 'Knowledge – Theoretical Understanding (Level 7)',
           category: 'A. Knowledge',
         ),
@@ -526,7 +596,8 @@ class FakeData {
       id: 'c3',
       code: 'ENGR101',
       title: 'Introduction to Engineering',
-      description: 'Broad survey of engineering disciplines with hands-on design labs.',
+      description:
+          'Broad survey of engineering disciplines with hands-on design labs.',
       programId: 'p3',
       instructor: 'Dr. Omar Salman',
       semester: 'Fall 2024',
@@ -534,7 +605,8 @@ class FakeData {
       clos: [
         CourseClo(
           code: 'A1',
-          description: 'Describe the breadth of engineering disciplines and impacts.',
+          description:
+              'Describe the breadth of engineering disciplines and impacts.',
           descriptor: 'Knowledge – Applied (Level 6)',
           category: 'A. Knowledge',
         ),
@@ -563,7 +635,8 @@ class FakeData {
       id: 'c4',
       code: 'MATH220',
       title: 'Discrete Mathematics',
-      description: 'Logic, combinatorics, graph theory, and proofs for computer science.',
+      description:
+          'Logic, combinatorics, graph theory, and proofs for computer science.',
       programId: 'p1',
       instructor: 'Dr. Reem Al-Hassan',
       semester: 'Summer 2024',
@@ -571,7 +644,8 @@ class FakeData {
       clos: [
         CourseClo(
           code: 'A1',
-          description: 'Apply logic, sets, and proof techniques to discrete problems.',
+          description:
+              'Apply logic, sets, and proof techniques to discrete problems.',
           descriptor: 'Knowledge – Applied (Level 7)',
           category: 'A. Knowledge',
         ),
@@ -601,7 +675,8 @@ class FakeData {
   static List<CourseReport> courseReports = [
     const CourseReport(
       courseId: 'c1',
-      description: 'Syllabus outlining advanced algorithm topics with weekly labs.',
+      description:
+          'Syllabus outlining advanced algorithm topics with weekly labs.',
       learningOutcomes: [
         'Analyze algorithmic complexity using Big-O notation.',
         'Design algorithms for graph and network problems.',
@@ -623,7 +698,8 @@ class FakeData {
     ),
     const CourseReport(
       courseId: 'c2',
-      description: 'Course report covering management frameworks and case studies.',
+      description:
+          'Course report covering management frameworks and case studies.',
       learningOutcomes: [
         'Apply leadership models to team scenarios.',
         'Interpret organizational culture diagnostics.',
@@ -651,7 +727,8 @@ class FakeData {
       semester: 'Fall 2024',
       instructor: 'Dr. Hana Ibrahim',
       enrolled: 42,
-      summary: 'Students excelled in dynamic programming; need more graph practice.',
+      summary:
+          'Students excelled in dynamic programming; need more graph practice.',
     ),
     const CourseReflection(
       id: 'cr2',
@@ -756,7 +833,8 @@ class FakeData {
       direction: 'sent',
       status: 'pending',
       title: 'COSC248 – Fall 2024 Report',
-      reportSummary: 'Awaiting moderation feedback for Algorithms & Complexity.',
+      reportSummary:
+          'Awaiting moderation feedback for Algorithms & Complexity.',
     ),
     const ModerationRequest(
       id: 'mr2',
@@ -793,13 +871,49 @@ class FakeData {
         'Product engineer',
       ],
       plos: [
-        ProgramOutcome(code: 'PLO1', description: 'Demonstrate critical knowledge of core computing concepts.'),
-        ProgramOutcome(code: 'PLO2', description: 'Analyze and define computing requirements and evaluate solutions.'),
-        ProgramOutcome(code: 'PLO3', description: 'Design and implement computing solutions in context.'),
+        ProgramOutcome(
+          code: 'PLO1',
+          description:
+              'Demonstrate critical knowledge of core computing concepts.',
+        ),
+        ProgramOutcome(
+          code: 'PLO2',
+          description:
+              'Analyze and define computing requirements and evaluate solutions.',
+        ),
+        ProgramOutcome(
+          code: 'PLO3',
+          description: 'Design and implement computing solutions in context.',
+        ),
+        ProgramOutcome(
+          code: 'PLO4',
+          description: 'Apply professional and ethical standards in practice.',
+        ),
+        ProgramOutcome(
+          code: 'PLO5',
+          description:
+              'Communicate effectively with technical and non-technical audiences.',
+        ),
+        ProgramOutcome(
+          code: 'PLO6',
+          description:
+              'Work effectively in teams and collaborative environments.',
+        ),
+        ProgramOutcome(
+          code: 'PLO7',
+          description:
+              'Demonstrate lifelong learning and professional development.',
+        ),
       ],
       pis: [
-        ProgramOutcome(code: 'PI1', description: 'Use appropriate algorithms and data structures.'),
-        ProgramOutcome(code: 'PI2', description: 'Apply ethical and professional standards.'),
+        ProgramOutcome(
+          code: 'PI1',
+          description: 'Use appropriate algorithms and data structures.',
+        ),
+        ProgramOutcome(
+          code: 'PI2',
+          description: 'Apply ethical and professional standards.',
+        ),
       ],
       ilos: [
         'Evaluate personal strengths and weaknesses to grow.',
@@ -872,7 +986,8 @@ class FakeData {
     const IssueReport(
       id: 'ir1',
       issueId: 'i1',
-      correctiveActions: 'Introduce automated prerequisite check and advisor outreach.',
+      correctiveActions:
+          'Introduce automated prerequisite check and advisor outreach.',
       followUp: 'Review enrollment data after add/drop.',
       status: 'Draft',
     ),
@@ -935,6 +1050,107 @@ class FakeData {
       version: 'v2.1',
       notes: 'Annual review: PLO alignment improved; expand electives.',
       date: '2024-11-01',
+    ),
+  ];
+
+  static List<User> users = [
+    const User(
+      id: 'u1',
+      email: 'admin@aubh.edu.bh',
+      firstName: 'System',
+      lastName: 'Administrator',
+      role: 'admin',
+      createdAt: 'Jan 01, 2023',
+    ),
+    const User(
+      id: 'u2',
+      email: 'john.smith@aubh.edu.bh',
+      firstName: 'John',
+      lastName: 'Smith',
+      role: 'chair',
+      department: 'Computer Science',
+      createdAt: 'Feb 15, 2023',
+    ),
+    const User(
+      id: 'u3',
+      email: 'sarah.johnson@aubh.edu.bh',
+      firstName: 'Sarah',
+      lastName: 'Johnson',
+      role: 'moderator',
+      department: 'Engineering',
+      createdAt: 'Mar 10, 2023',
+    ),
+    const User(
+      id: 'u4',
+      email: 'mike.davis@aubh.edu.bh',
+      firstName: 'Mike',
+      lastName: 'Davis',
+      role: 'faculty',
+      department: 'Business',
+      createdAt: 'Apr 05, 2023',
+    ),
+  ];
+
+  static List<AcademicYear> academicYears = [
+    const AcademicYear(
+      id: 'ay1',
+      name: '2023-2024',
+      startDate: 'Aug 01, 2023',
+      endDate: 'Jul 31, 2024',
+      isCurrent: true,
+      semesters: [
+        AcademicSemester(
+          id: 's1',
+          name: 'Fall 2023',
+          startDate: 'Aug 15, 2023',
+          endDate: 'Dec 15, 2023',
+          isCurrent: false,
+        ),
+        AcademicSemester(
+          id: 's2',
+          name: 'Spring 2024',
+          startDate: 'Jan 15, 2024',
+          endDate: 'May 15, 2024',
+          isCurrent: true,
+        ),
+        AcademicSemester(
+          id: 's3',
+          name: 'Summer 2024',
+          startDate: 'Jun 01, 2024',
+          endDate: 'Jul 31, 2024',
+          isCurrent: false,
+        ),
+      ],
+    ),
+    const AcademicYear(
+      id: 'ay2',
+      name: '2024-2025',
+      startDate: 'Aug 01, 2024',
+      endDate: 'Jul 31, 2025',
+      isCurrent: false,
+      semesters: [
+        AcademicSemester(
+          id: 's4',
+          name: 'Fall 2024',
+          startDate: 'Aug 15, 2024',
+          endDate: 'Dec 15, 2024',
+          isCurrent: false,
+        ),
+        AcademicSemester(
+          id: 's5',
+          name: 'Spring 2025',
+          startDate: 'Jan 15, 2025',
+          endDate: 'May 15, 2025',
+          isCurrent: false,
+        ),
+        AcademicSemester(
+          id: 's6',
+          name: 'Summer 2025',
+          startDate: 'Jun 01, 2025',
+          endDate: 'Jul 31, 2025',
+          isCurrent: false,
+        ),
+      ],
     ),
   ];
 }

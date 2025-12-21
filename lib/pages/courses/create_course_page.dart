@@ -52,6 +52,42 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
     'In-person',
   ];
 
+  final List<String> teachingMethodOptions = const [
+    'Lecture',
+    'Discussion',
+    'Lab exercises',
+    'Workshop',
+    'Seminar',
+    'Project-based learning',
+    'Case study',
+    'Tutorial',
+    'Self-directed learning',
+    'Group work',
+    'Presentation',
+    'Field work',
+    'Online learning',
+  ];
+
+  final List<String> assessmentMethodOptions = const [
+    'Written examination',
+    'Oral examination',
+    'In-class exercises',
+    'Tutorial',
+    'Midterm',
+    'Final exam',
+    'Quiz',
+    'Assignment',
+    'Project',
+    'Portfolio',
+    'Presentation',
+    'Lab report',
+    'Case study analysis',
+    'Group work assessment',
+    'Peer assessment',
+    'Self-assessment',
+    'Practical demonstration',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -129,26 +165,59 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
 
     cloDefinitions
       ..clear()
-      ..addAll(course.clos.map((c) {
-        final row = _CloDefinitionRow();
-        row.codeCtrl.text = c.code;
-        row.categoryCtrl.text = c.category;
-        row.descriptionCtrl.text = c.description;
-        row.descriptorCtrl.text = c.descriptor;
-        return row;
-      }));
+      ..addAll(
+        course.clos.map((c) {
+          final row = _CloDefinitionRow();
+          // Extract letter from code (e.g., "A1" -> "A")
+          if (c.code.isNotEmpty) {
+            row.letterType = c.code.substring(0, 1);
+          }
+          row.descriptionCtrl.text = c.description;
+          row.descriptorCtrl.text = c.descriptor;
+          row.nqfLevel = c.nqfLevel.isNotEmpty ? c.nqfLevel : 'Level 7';
+          return row;
+        }),
+      );
     if (cloDefinitions.isEmpty) _addCloDefinitionRow();
 
     clos
       ..clear()
-      ..addAll(course.topics.map((t) {
-        final row = _CloRowData();
-        row.titleCtrl.text = t.title;
-        row.descriptorCtrl.text = t.closCovered;
-        row.teachingCtrl.text = t.teachingMethods;
-        row.assessmentCtrl.text = t.assessmentMethods;
-        return row;
-      }));
+      ..addAll(
+        course.topics.map((t) {
+          final row = _CloRowData();
+          row.titleCtrl.text = t.title;
+          // Parse comma-separated strings back to sets for editing
+          if (t.closCovered.isNotEmpty) {
+            row.selectedClos.addAll(
+              t.closCovered
+                  .split(', ')
+                  .map((s) => s.trim())
+                  .where((s) => s.isNotEmpty),
+            );
+          }
+          if (t.teachingMethods.isNotEmpty) {
+            row.selectedTeachingMethods.addAll(
+              t.teachingMethods
+                  .split(', ')
+                  .map((s) => s.trim())
+                  .where((s) => s.isNotEmpty),
+            );
+          }
+          if (t.assessmentMethods.isNotEmpty) {
+            row.selectedAssessmentMethods.addAll(
+              t.assessmentMethods
+                  .split(', ')
+                  .map((s) => s.trim())
+                  .where((s) => s.isNotEmpty),
+            );
+          }
+          // Keep backward compatibility
+          row.descriptorCtrl.text = t.closCovered;
+          row.teachingCtrl.text = t.teachingMethods;
+          row.assessmentCtrl.text = t.assessmentMethods;
+          return row;
+        }),
+      );
     if (clos.isEmpty) {
       _addCloRow();
       _addCloRow();
@@ -156,17 +225,29 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
 
     assessments
       ..clear()
-      ..addAll(course.assessments.map((a) {
-        final row = _AssessmentRowData();
-        row.nameCtrl.text = a.name;
-        row.methodCtrl.text = a.method;
-        row.type = a.type;
-        row.closCtrl.text = a.closAssessed;
-        row.descriptionCtrl.text = a.description;
-        row.nqfLevelCtrl.text = a.nqfLevel;
-        row.weightCtrl.text = a.weight;
-        return row;
-      }));
+      ..addAll(
+        course.assessments.map((a) {
+          final row = _AssessmentRowData();
+          row.nameCtrl.text = a.name;
+          row.methodCtrl.text = a.method;
+          row.type = a.type;
+          row.closCtrl.text = a.closAssessed;
+          row.descriptionCtrl.text = a.description;
+          row.nqfLevelCtrl.text = a.nqfLevel;
+          row.nqfLevel = a.nqfLevel.isNotEmpty ? a.nqfLevel : 'Level 7';
+          row.weightCtrl.text = a.weight;
+          // Parse comma-separated CLOs back to set for editing
+          if (a.closAssessed.isNotEmpty) {
+            row.selectedClos.addAll(
+              a.closAssessed
+                  .split(', ')
+                  .map((s) => s.trim())
+                  .where((s) => s.isNotEmpty),
+            );
+          }
+          return row;
+        }),
+      );
     if (assessments.isEmpty) _addAssessmentRow();
   }
 
@@ -184,6 +265,42 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
     });
   }
 
+  String _getAutoGeneratedCode(int index) {
+    final def = cloDefinitions[index];
+    final letter = def.letterType;
+
+    // Count how many definitions with the same letter come before and including this one
+    int count = 1;
+    for (int i = 0; i < cloDefinitions.length; i++) {
+      if (cloDefinitions[i].letterType == letter) {
+        if (i == index) break;
+        count++;
+      }
+    }
+
+    return '$letter$count';
+  }
+
+  String _getCategoryForLetter(String letter) {
+    switch (letter) {
+      case 'A':
+        return 'Knowledge';
+      case 'B':
+        return 'Skills';
+      case 'C':
+        return 'Competencies';
+      default:
+        return 'Knowledge';
+    }
+  }
+
+  List<String> _getAvailableClosOptions() {
+    return cloDefinitions.map((def) {
+      final index = cloDefinitions.indexOf(def);
+      return _getAutoGeneratedCode(index);
+    }).toList();
+  }
+
   void _removeCloDefinitionRow(int index) {
     if (cloDefinitions.length == 1) return;
     setState(() {
@@ -193,7 +310,9 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
   }
 
   void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _handleSave() {
@@ -209,24 +328,26 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
     final credits = int.tryParse(creditsCtrl.text) ?? 3;
     final programId = selectedColleges.first;
     final closDefined = cloDefinitions
-        .where((c) => c.codeCtrl.text.isNotEmpty || c.descriptionCtrl.text.isNotEmpty)
-        .map(
-          (c) => CourseClo(
-            code: c.codeCtrl.text,
+        .where((c) => c.descriptionCtrl.text.isNotEmpty)
+        .map((c) {
+          final index = cloDefinitions.indexOf(c);
+          return CourseClo(
+            code: _getAutoGeneratedCode(index),
             description: c.descriptionCtrl.text,
             descriptor: c.descriptorCtrl.text,
-            category: c.categoryCtrl.text,
-          ),
-        )
+            category: _getCategoryForLetter(c.letterType),
+            nqfLevel: c.nqfLevel,
+          );
+        })
         .toList();
     final topics = clos
         .where((c) => c.titleCtrl.text.isNotEmpty)
         .map(
           (c) => WeeklyTopic(
             title: c.titleCtrl.text,
-            closCovered: c.descriptorCtrl.text,
-            teachingMethods: c.teachingCtrl.text,
-            assessmentMethods: c.assessmentCtrl.text,
+            closCovered: c.selectedClos.join(', '),
+            teachingMethods: c.selectedTeachingMethods.join(', '),
+            assessmentMethods: c.selectedAssessmentMethods.join(', '),
           ),
         )
         .toList();
@@ -237,9 +358,9 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
             name: a.nameCtrl.text,
             method: a.methodCtrl.text,
             type: a.type,
-            closAssessed: a.closCtrl.text,
+            closAssessed: a.selectedClos.join(', '),
             description: a.descriptionCtrl.text,
-            nqfLevel: a.nqfLevelCtrl.text,
+            nqfLevel: a.nqfLevel,
             weight: a.weightCtrl.text,
           ),
         )
@@ -298,15 +419,19 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.existingCourse == null ? 'Create Course' : 'Edit Course',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text(
+            widget.existingCourse == null ? 'Create Course' : 'Edit Course',
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Identity & Logistics',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                const Text(
+                  'Identity & Logistics',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 12,
@@ -379,29 +504,45 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text('Colleges', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey[800])),
+                Text(
+                  'Colleges',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[800],
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: _collegeOptions
-                      .map((college) => ChoiceChip(
-                            label: Text(college),
-                            selected: selectedColleges.contains(college),
-                            onSelected: (selected) {
-                              setState(() {
-                                if (selected) {
-                                  selectedColleges.add(college);
-                                } else {
-                                  selectedColleges.remove(college);
-                                }
-                              });
-                            },
-                          ))
+                      .map(
+                        (college) => ChoiceChip(
+                          label: Text(college),
+                          selected: selectedColleges.contains(college),
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                selectedColleges.add(college);
+                              } else {
+                                selectedColleges.remove(college);
+                              }
+                            });
+                          },
+                        ),
+                      )
                       .toList(),
                 ),
                 const SizedBox(height: 12),
-                Text('Modes of Attendance', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey[800])),
+                Text(
+                  'Modes of Attendance',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[800],
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -413,7 +554,9 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                           selected: selectedModes.contains(mode),
                           onSelected: (selected) {
                             setState(() {
-                              selected ? selectedModes.add(mode) : selectedModes.remove(mode);
+                              selected
+                                  ? selectedModes.add(mode)
+                                  : selectedModes.remove(mode);
                             });
                           },
                         ),
@@ -433,13 +576,16 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                   label: 'CLO - NQF Descriptor (summary)',
                   controller: nqfDescriptorCtrl,
                   maxLines: 2,
-                  hint: 'Knowledge – Theoretical Understanding (Level 7), Applied Knowledge, Skills.',
+                  hint:
+                      'Knowledge – Theoretical Understanding (Level 7), Applied Knowledge, Skills.',
                 ),
                 const SizedBox(height: 16),
                 const Divider(),
                 const SizedBox(height: 12),
-                const Text('Course Learning Outcomes',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                const Text(
+                  'Course Learning Outcomes',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'Capture CLO codes (A1, B1, etc.), their descriptions, and NQF descriptors.',
@@ -460,51 +606,222 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                       children: [
                         Row(
                           children: [
-                            Text('CLO ${index + 1}',
-                                style: const TextStyle(fontWeight: FontWeight.w700)),
+                            Text(
+                              'CLO ${index + 1}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                             const Spacer(),
                             IconButton(
                               icon: const Icon(Icons.close),
-                              onPressed: cloDefinitions.length == 1 ? null : () => _removeCloDefinitionRow(index),
+                              onPressed: cloDefinitions.length == 1
+                                  ? null
+                                  : () => _removeCloDefinitionRow(index),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
-                              width: 160,
-                              child: AppTextField(
-                                label: 'Code',
-                                controller: def.codeCtrl,
-                                hint: 'A1',
-                              ),
+                            // First Row: Code and Category
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Code',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 16,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          color: Colors.grey.shade100,
+                                        ),
+                                        child: Text(
+                                          _getAutoGeneratedCode(index),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      DropdownButtonFormField<String>(
+                                        value: def.letterType,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Letter',
+                                          contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 8,
+                                          ),
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        items: const [
+                                          DropdownMenuItem(
+                                            value: 'A',
+                                            child: Text('A - Knowledge'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'B',
+                                            child: Text('B - Skills'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'C',
+                                            child: Text('C - Competencies'),
+                                          ),
+                                        ],
+                                        onChanged: (val) {
+                                          setState(() {
+                                            def.letterType = val ?? 'A';
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Category',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 16,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          color: Colors.grey.shade50,
+                                        ),
+                                        child: Text(
+                                          _getCategoryForLetter(def.letterType),
+                                          style: TextStyle(
+                                            color: Colors.grey.shade700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(
-                              width: 220,
-                              child: AppTextField(
-                                label: 'Category (optional)',
-                                controller: def.categoryCtrl,
-                                hint: 'A. Knowledge',
-                              ),
+                            const SizedBox(height: 12),
+                            // Second Row: Description
+                            AppTextField(
+                              label: 'Description',
+                              controller: def.descriptionCtrl,
+                              hint: 'Demonstrate advanced knowledge of ...',
                             ),
-                            SizedBox(
-                              width: 320,
-                              child: AppTextField(
-                                label: 'Description',
-                                controller: def.descriptionCtrl,
-                                hint: 'Demonstrate advanced knowledge of ...',
-                              ),
-                            ),
-                            SizedBox(
-                              width: 320,
-                              child: AppTextField(
-                                label: 'NQF Descriptor / Level',
-                                controller: def.descriptorCtrl,
-                                hint: 'Knowledge – Theoretical Understanding (Level 7)',
-                              ),
+                            const SizedBox(height: 12),
+                            // Third Row: NQF Descriptor and Level
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: AppTextField(
+                                    label: 'NQF Descriptor',
+                                    controller: def.descriptorCtrl,
+                                    hint:
+                                        'Knowledge – Theoretical Understanding',
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(
+                                        height: 8,
+                                      ), // Match AppTextField label spacing
+                                      DropdownButtonFormField<String>(
+                                        value: def.nqfLevel,
+                                        decoration: const InputDecoration(
+                                          labelText: 'NQF Level',
+                                          contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 16,
+                                          ),
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        items: const [
+                                          DropdownMenuItem(
+                                            value: 'Level 1',
+                                            child: Text('Level 1'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'Level 2',
+                                            child: Text('Level 2'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'Level 3',
+                                            child: Text('Level 3'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'Level 4',
+                                            child: Text('Level 4'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'Level 5',
+                                            child: Text('Level 5'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'Level 6',
+                                            child: Text('Level 6'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'Level 7',
+                                            child: Text('Level 7'),
+                                          ),
+                                        ],
+                                        onChanged: (val) {
+                                          setState(() {
+                                            def.nqfLevel = val ?? 'Level 7';
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -523,8 +840,10 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                 const SizedBox(height: 16),
                 const Divider(),
                 const SizedBox(height: 12),
-                const Text('Weekly Topics & CLO Mapping',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                const Text(
+                  'Weekly Topics & CLO Mapping',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'Capture up to 15 weekly topics and map which CLOs they address.',
@@ -545,51 +864,222 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                       children: [
                         Row(
                           children: [
-                            Text('Topic ${index + 1}',
-                                style: const TextStyle(fontWeight: FontWeight.w700)),
+                            Text(
+                              'Topic ${index + 1}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                             const Spacer(),
                             IconButton(
                               icon: const Icon(Icons.close),
-                              onPressed: clos.length == 1 ? null : () => _removeCloRow(index),
+                              onPressed: clos.length == 1
+                                  ? null
+                                  : () => _removeCloRow(index),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
+                        Column(
                           children: [
-                            SizedBox(
-                              width: 320,
-                              child: AppTextField(
-                                label: 'Topic Title',
-                                controller: clo.titleCtrl,
-                                hint: 'Risk Management, Cryptography, Network Security',
-                              ),
+                            // First row: Topic Title
+                            AppTextField(
+                              label: 'Topic Title',
+                              controller: clo.titleCtrl,
+                              hint:
+                                  'Risk Management, Cryptography, Network Security',
                             ),
-                            SizedBox(
-                              width: 320,
-                              child: AppTextField(
-                                label: 'CLOs covered',
-                                controller: clo.descriptorCtrl,
-                                hint: 'A1, A2, B1, B2',
-                              ),
-                            ),
-                            SizedBox(
-                              width: 320,
-                              child: AppTextField(
-                                label: 'Teaching Methods',
-                                controller: clo.teachingCtrl,
-                                hint: 'Lecture, Discussion, Lab exercises',
-                              ),
-                            ),
-                            SizedBox(
-                              width: 320,
-                              child: AppTextField(
-                                label: 'Assessment Methods',
-                                controller: clo.assessmentCtrl,
-                                hint: 'In-class exercises, Tutorial, Midterm',
-                              ),
+                            const SizedBox(height: 12),
+                            // Second row: CLOs covered, Teaching Methods, Assessment Methods
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // CLOs covered
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'CLOs covered',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Wrap(
+                                          spacing: 8,
+                                          runSpacing: 4,
+                                          children: _getAvailableClosOptions()
+                                              .map((closOption) {
+                                                return FilterChip(
+                                                  label: Text(closOption),
+                                                  selected: clo.selectedClos
+                                                      .contains(closOption),
+                                                  onSelected: (selected) {
+                                                    setState(() {
+                                                      if (selected) {
+                                                        clo.selectedClos.add(
+                                                          closOption,
+                                                        );
+                                                      } else {
+                                                        clo.selectedClos.remove(
+                                                          closOption,
+                                                        );
+                                                      }
+                                                    });
+                                                  },
+                                                );
+                                              })
+                                              .toList(),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                // Teaching Methods
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Teaching Methods',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        width: double.infinity,
+                                        constraints: BoxConstraints(
+                                          maxHeight: 120,
+                                        ),
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: SingleChildScrollView(
+                                          child: Wrap(
+                                            spacing: 4,
+                                            runSpacing: 2,
+                                            children: teachingMethodOptions.map((
+                                              method,
+                                            ) {
+                                              return FilterChip(
+                                                label: Text(
+                                                  method,
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                                selected: clo
+                                                    .selectedTeachingMethods
+                                                    .contains(method),
+                                                onSelected: (selected) {
+                                                  setState(() {
+                                                    if (selected) {
+                                                      clo.selectedTeachingMethods
+                                                          .add(method);
+                                                    } else {
+                                                      clo.selectedTeachingMethods
+                                                          .remove(method);
+                                                    }
+                                                  });
+                                                },
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                // Assessment Methods
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Assessment Methods',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        width: double.infinity,
+                                        constraints: BoxConstraints(
+                                          maxHeight: 120,
+                                        ),
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: SingleChildScrollView(
+                                          child: Wrap(
+                                            spacing: 4,
+                                            runSpacing: 2,
+                                            children: assessmentMethodOptions.map((
+                                              method,
+                                            ) {
+                                              return FilterChip(
+                                                label: Text(
+                                                  method,
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                                selected: clo
+                                                    .selectedAssessmentMethods
+                                                    .contains(method),
+                                                onSelected: (selected) {
+                                                  setState(() {
+                                                    if (selected) {
+                                                      clo.selectedAssessmentMethods
+                                                          .add(method);
+                                                    } else {
+                                                      clo.selectedAssessmentMethods
+                                                          .remove(method);
+                                                    }
+                                                  });
+                                                },
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -607,8 +1097,10 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                 ),
                 const Divider(),
                 const SizedBox(height: 12),
-                const Text('Assessment & Weighting',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                const Text(
+                  'Assessment & Weighting',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'Map each assessment to its method, CLOs assessed, NQF level, and weight.',
@@ -629,12 +1121,18 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                       children: [
                         Row(
                           children: [
-                            Text('Assessment ${index + 1}',
-                                style: const TextStyle(fontWeight: FontWeight.w700)),
+                            Text(
+                              'Assessment ${index + 1}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                             const Spacer(),
                             IconButton(
                               icon: const Icon(Icons.close),
-                              onPressed: assessments.length == 1 ? null : () => _removeAssessmentRow(index),
+                              onPressed: assessments.length == 1
+                                  ? null
+                                  : () => _removeAssessmentRow(index),
                             ),
                           ],
                         ),
@@ -663,20 +1161,81 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                               width: 200,
                               child: DropdownButtonFormField<String>(
                                 value: assessment.type,
-                                decoration: const InputDecoration(labelText: 'Formative / Summative'),
+                                decoration: const InputDecoration(
+                                  labelText: 'Formative / Summative',
+                                ),
                                 items: const [
-                                  DropdownMenuItem(value: 'Formative', child: Text('Formative')),
-                                  DropdownMenuItem(value: 'Summative', child: Text('Summative')),
+                                  DropdownMenuItem(
+                                    value: 'Formative',
+                                    child: Text('Formative'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Summative',
+                                    child: Text('Summative'),
+                                  ),
                                 ],
-                                onChanged: (val) => setState(() => assessment.type = val ?? 'Summative'),
+                                onChanged: (val) => setState(
+                                  () => assessment.type = val ?? 'Summative',
+                                ),
                               ),
                             ),
                             SizedBox(
                               width: 200,
-                              child: AppTextField(
-                                label: 'CLOs assessed',
-                                controller: assessment.closCtrl,
-                                hint: 'A1, A2, B1',
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'CLOs assessed',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    width: double.infinity,
+                                    constraints: BoxConstraints(maxHeight: 120),
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: SingleChildScrollView(
+                                      child: Wrap(
+                                        spacing: 4,
+                                        runSpacing: 2,
+                                        children: _getAvailableClosOptions()
+                                            .map((closOption) {
+                                              return FilterChip(
+                                                label: Text(
+                                                  closOption,
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                                selected: assessment
+                                                    .selectedClos
+                                                    .contains(closOption),
+                                                onSelected: (selected) {
+                                                  setState(() {
+                                                    if (selected) {
+                                                      assessment.selectedClos
+                                                          .add(closOption);
+                                                    } else {
+                                                      assessment.selectedClos
+                                                          .remove(closOption);
+                                                    }
+                                                  });
+                                                },
+                                              );
+                                            })
+                                            .toList(),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(
@@ -684,15 +1243,57 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                               child: AppTextField(
                                 label: 'Description',
                                 controller: assessment.descriptionCtrl,
-                                hint: 'Hands-on labs to apply network security controls',
+                                hint:
+                                    'Hands-on labs to apply network security controls',
                               ),
                             ),
                             SizedBox(
                               width: 150,
-                              child: AppTextField(
-                                label: 'NQF Level',
-                                controller: assessment.nqfLevelCtrl,
-                                hint: '7',
+                              child: DropdownButtonFormField<String>(
+                                value: assessment.nqfLevel,
+                                decoration: const InputDecoration(
+                                  labelText: 'NQF Level',
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 16,
+                                  ),
+                                  border: OutlineInputBorder(),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'Level 1',
+                                    child: Text('Level 1'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Level 2',
+                                    child: Text('Level 2'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Level 3',
+                                    child: Text('Level 3'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Level 4',
+                                    child: Text('Level 4'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Level 5',
+                                    child: Text('Level 5'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Level 6',
+                                    child: Text('Level 6'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Level 7',
+                                    child: Text('Level 7'),
+                                  ),
+                                ],
+                                onChanged: (val) {
+                                  setState(() {
+                                    assessment.nqfLevel = val ?? 'Level 7';
+                                  });
+                                },
                               ),
                             ),
                             SizedBox(
@@ -719,21 +1320,25 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                 ),
                 const Divider(),
                 const SizedBox(height: 12),
-                const Text('Resources & Policies',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                const Text(
+                  'Materials',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 12),
                 AppTextField(
                   label: 'Core texts',
                   controller: coreTextsCtrl,
                   maxLines: 3,
-                  hint: 'Intro to Cybersecurity: A Multidisciplinary Challenge, 2024',
+                  hint:
+                      'Intro to Cybersecurity: A Multidisciplinary Challenge, 2024',
                 ),
                 const SizedBox(height: 12),
                 AppTextField(
                   label: 'Recommended books',
                   controller: recommendedCtrl,
                   maxLines: 3,
-                  hint: 'Whitman & Mattord: Principles of Information Security, 7th Ed.',
+                  hint:
+                      'Whitman & Mattord: Principles of Information Security, 7th Ed.',
                 ),
                 const SizedBox(height: 12),
                 AppTextField(
@@ -756,6 +1361,13 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                   maxLines: 2,
                   hint: 'None or list of labs/partners',
                 ),
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 12),
+                const Text(
+                  'Policies',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 12),
                 AppTextField(
                   label: 'Course Policies',
@@ -777,6 +1389,11 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
 
 class _CloRowData {
   final TextEditingController titleCtrl = TextEditingController();
+  final Set<String> selectedClos = {};
+  final Set<String> selectedTeachingMethods = {};
+  final Set<String> selectedAssessmentMethods = {};
+
+  // Keep these for backward compatibility when editing existing courses
   final TextEditingController descriptorCtrl = TextEditingController();
   final TextEditingController teachingCtrl = TextEditingController();
   final TextEditingController assessmentCtrl = TextEditingController();
@@ -796,7 +1413,9 @@ class _AssessmentRowData {
   final TextEditingController descriptionCtrl = TextEditingController();
   final TextEditingController nqfLevelCtrl = TextEditingController();
   final TextEditingController weightCtrl = TextEditingController();
+  final Set<String> selectedClos = {};
   String type = 'Summative';
+  String nqfLevel = 'Level 7';
 
   void dispose() {
     nameCtrl.dispose();
@@ -809,14 +1428,25 @@ class _AssessmentRowData {
 }
 
 class _CloDefinitionRow {
-  final TextEditingController codeCtrl = TextEditingController();
-  final TextEditingController categoryCtrl = TextEditingController();
+  String letterType = 'A'; // A, B, or C
   final TextEditingController descriptionCtrl = TextEditingController();
   final TextEditingController descriptorCtrl = TextEditingController();
+  String nqfLevel = 'Level 7'; // Default to Level 7
+
+  String get category {
+    switch (letterType) {
+      case 'A':
+        return 'Knowledge';
+      case 'B':
+        return 'Skills';
+      case 'C':
+        return 'Competencies';
+      default:
+        return 'Knowledge';
+    }
+  }
 
   void dispose() {
-    codeCtrl.dispose();
-    categoryCtrl.dispose();
     descriptionCtrl.dispose();
     descriptorCtrl.dispose();
   }

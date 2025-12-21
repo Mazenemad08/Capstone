@@ -4,7 +4,12 @@ import '../widgets/ui/search_bar.dart';
 import '../widgets/ui/page_header.dart';
 
 class MainLayout extends StatelessWidget {
-  const MainLayout({super.key, required this.title, required this.location, required this.child});
+  const MainLayout({
+    super.key,
+    required this.title,
+    required this.location,
+    required this.child,
+  });
 
   final String title;
   final String location;
@@ -20,7 +25,10 @@ class MainLayout extends StatelessWidget {
             _Sidebar(location: location),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 20,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -39,6 +47,8 @@ class MainLayout extends StatelessWidget {
                                     context.go('/programs/new');
                                   } else if (location.startsWith('/issues')) {
                                     context.go('/issues/new');
+                                  } else if (location.startsWith('/admin')) {
+                                    context.go('/admin/users/new');
                                   } else {
                                     context.go('/meetings/new');
                                   }
@@ -49,10 +59,7 @@ class MainLayout extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 18),
-                    PageHeader(
-                      title: title,
-                      subtitle: _subtitleFor(title),
-                    ),
+                    PageHeader(title: title, subtitle: _subtitleFor(title)),
                     const SizedBox(height: 12),
                     Expanded(child: child),
                   ],
@@ -77,6 +84,8 @@ class MainLayout extends StatelessWidget {
         return 'Upcoming academic meetings';
       case 'Reports':
         return 'Central view of reports and scorecards';
+      case 'Administration':
+        return 'System administration and user management';
       default:
         return 'Welcome to your workspace';
     }
@@ -96,6 +105,7 @@ class _Sidebar extends StatelessWidget {
       _NavEntry('Programs', Icons.school_rounded, '/programs'),
       _NavEntry('Issues', Icons.warning_amber_rounded, '/issues'),
       _NavEntry('Meetings', Icons.event_rounded, '/meetings'),
+      _NavEntry('Admin', Icons.admin_panel_settings_rounded, '/admin'),
     ];
 
     return Container(
@@ -117,7 +127,10 @@ class _Sidebar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text('Dashboard', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+              const Text(
+                'Dashboard',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -132,19 +145,29 @@ class _Sidebar extends StatelessWidget {
                   height: 48,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: selected ? const Color(0xFFF2F3F6) : Colors.transparent,
+                    color: selected
+                        ? const Color(0xFFF2F3F6)
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
-                    border: selected ? Border.all(color: const Color(0xFFE5E7EB)) : null,
+                    border: selected
+                        ? Border.all(color: const Color(0xFFE5E7EB))
+                        : null,
                   ),
                   child: Row(
                     children: [
-                      Icon(entry.icon, size: 22, color: selected ? Colors.black87 : Colors.black54),
+                      Icon(
+                        entry.icon,
+                        size: 22,
+                        color: selected ? Colors.black87 : Colors.black54,
+                      ),
                       const SizedBox(width: 12),
                       Text(
                         entry.label,
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                          fontWeight: selected
+                              ? FontWeight.w600
+                              : FontWeight.w500,
                           color: Colors.black87,
                         ),
                       ),

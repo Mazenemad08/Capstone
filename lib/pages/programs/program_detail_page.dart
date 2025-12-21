@@ -26,40 +26,66 @@ class ProgramDetailPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
+                flex: 3,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(program.name, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                    Text(
+                      program.name,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     const SizedBox(height: 6),
-                    Text(program.description),
+                    Text(
+                      program.description,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     const SizedBox(height: 10),
                     StatusBadge(label: program.accreditationStatus),
                   ],
                 ),
               ),
-              Wrap(
-                spacing: 10,
-                children: [
-                  PrimaryButton(
-                    label: 'See Previous Versions',
-                    icon: Icons.history,
-                    onPressed: () => context.go('/programs/${program.id}/versions'),
-                  ),
-                  PrimaryButton(
-                    label: 'Download Program Report',
-                    icon: Icons.download,
-                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Downloading program report (fake action)...')),
+              const SizedBox(width: 16),
+              Flexible(
+                flex: 2,
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    PrimaryButton(
+                      label: 'See Previous Versions',
+                      icon: Icons.history,
+                      onPressed: () =>
+                          context.go('/programs/${program.id}/versions'),
                     ),
-                  ),
-                  PrimaryButton(
-                    label: 'Edit Program',
-                    icon: Icons.edit,
-                    onPressed: () => context.go('/programs/${program.id}/edit'),
-                  ),
-                ],
+                    PrimaryButton(
+                      label: 'Download Program Specification',
+                      icon: Icons.download,
+                      onPressed: () =>
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Downloading program report (fake action)...',
+                              ),
+                            ),
+                          ),
+                    ),
+                    PrimaryButton(
+                      label: 'Edit Program',
+                      icon: Icons.edit,
+                      onPressed: () =>
+                          context.go('/programs/${program.id}/edit'),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -74,18 +100,41 @@ class ProgramDetailPage extends StatelessWidget {
               PrimaryButton(
                 label: 'View Evaluations',
                 icon: Icons.list_alt,
-                onPressed: () => context.go('/programs/${program.id}/evaluations'),
+                onPressed: () =>
+                    context.go('/programs/${program.id}/evaluations'),
               ),
             ],
           ),
           const SizedBox(height: 20),
           AppTabs(
             tabs: [
-              AppTab(label: 'Overview', content: _Overview(program: program, profile: profile)),
-              AppTab(label: 'Objectives', content: _ObjectivesTab(profile: profile)),
-              AppTab(label: 'Outcomes', content: _OutcomesTab(profile: profile)),
-              AppTab(label: 'Structure', content: _StructureTab(profile: profile)),
-              AppTab(label: 'Files', content: _LinkList(label: 'View program files', onTap: () => context.go('/programs/${program.id}/files'))),
+              AppTab(
+                label: 'Overview',
+                content: _Overview(program: program, profile: profile),
+              ),
+              AppTab(
+                label: 'Objectives',
+                content: _ObjectivesTab(profile: profile),
+              ),
+              AppTab(
+                label: 'Outcomes',
+                content: _OutcomesTab(profile: profile),
+              ),
+              AppTab(
+                label: 'Structure',
+                content: _StructureTab(profile: profile),
+              ),
+              AppTab(
+                label: 'Accreditation',
+                content: _AccreditationTab(programId: program.id),
+              ),
+              AppTab(
+                label: 'Files',
+                content: _LinkList(
+                  label: 'View program files',
+                  onTap: () => context.go('/programs/${program.id}/files'),
+                ),
+              ),
             ],
           ),
         ],
@@ -93,10 +142,15 @@ class ProgramDetailPage extends StatelessWidget {
     );
   }
 
-  Future<void> _showAddEvaluationDialog(BuildContext context, String programId) async {
+  Future<void> _showAddEvaluationDialog(
+    BuildContext context,
+    String programId,
+  ) async {
     final versionCtrl = TextEditingController();
     final notesCtrl = TextEditingController();
-    final dateCtrl = TextEditingController(text: DateTime.now().toIso8601String().substring(0, 10));
+    final dateCtrl = TextEditingController(
+      text: DateTime.now().toIso8601String().substring(0, 10),
+    );
     await showDialog(
       context: context,
       builder: (dialogCtx) {
@@ -107,25 +161,40 @@ class ProgramDetailPage extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AppTextField(label: 'Version', controller: versionCtrl, hint: 'v2.2'),
+                AppTextField(
+                  label: 'Version',
+                  controller: versionCtrl,
+                  hint: 'v2.2',
+                ),
                 const SizedBox(height: 12),
-                AppTextField(label: 'Date', controller: dateCtrl, hint: '2024-12-01'),
+                AppTextField(
+                  label: 'Date',
+                  controller: dateCtrl,
+                  hint: '2024-12-01',
+                ),
                 const SizedBox(height: 12),
-                AppTextField(label: 'Notes', controller: notesCtrl, maxLines: 3),
+                AppTextField(
+                  label: 'Notes',
+                  controller: notesCtrl,
+                  maxLines: 3,
+                ),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(dialogCtx).pop(), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              child: const Text('Cancel'),
+            ),
             PrimaryButton(
               label: 'Save',
               onPressed: () {
                 context.read<AppState>().addProgramEvaluation(
-                      programId: programId,
-                      version: versionCtrl.text,
-                      notes: notesCtrl.text,
-                      date: dateCtrl.text,
-                    );
+                  programId: programId,
+                  version: versionCtrl.text,
+                  notes: notesCtrl.text,
+                  date: dateCtrl.text,
+                );
                 Navigator.of(dialogCtx).pop();
               },
             ),
@@ -170,8 +239,10 @@ class _Overview extends StatelessWidget {
           Text('College: ${program.college}'),
           Text('Level: ${program.level}'),
           const SizedBox(height: 10),
-          Text('Graduate profile:',
-              style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(
+            'Graduate profile:',
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
           Text(profile?.graduateProfile ?? 'N/A'),
         ],
       ),
@@ -189,24 +260,37 @@ class _ObjectivesTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Objectives', style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text(
+            'Objectives',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 6),
-          if (profile?.objectives.isEmpty ?? true) const Text('No objectives captured.')
+          if (profile?.objectives.isEmpty ?? true)
+            const Text('No objectives captured.')
           else
             ...profile!.objectives.map((o) => Text('• $o')),
           const SizedBox(height: 12),
-          const Text('Why take this program?', style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text(
+            'Why take this program?',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 6),
           Text(profile?.whyTake ?? 'N/A'),
           const SizedBox(height: 12),
-          const Text('Destinations of graduates', style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text(
+            'Destinations of graduates',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 6),
-          if (profile?.destinations.isEmpty ?? true) const Text('No destinations listed.')
+          if (profile?.destinations.isEmpty ?? true)
+            const Text('No destinations listed.')
           else
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: profile!.destinations.map((d) => Chip(label: Text(d))).toList(),
+              children: profile!.destinations
+                  .map((d) => Chip(label: Text(d)))
+                  .toList(),
             ),
         ],
       ),
@@ -224,24 +308,229 @@ class _OutcomesTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Program Learning Outcomes (PLOs)', style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text(
+            'Program Learning Outcomes (PLOs)',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 6),
-          if (profile?.plos.isEmpty ?? true) const Text('No PLOs captured.')
+          if (profile?.plos.isEmpty ?? true)
+            const Text('No PLOs captured.')
           else
             ...profile!.plos.map((p) => Text('${p.code}: ${p.description}')),
           const Divider(height: 24),
-          const Text('Program Indicators (PIs)', style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text(
+            'Program Indicators (PIs)',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 6),
-          if (profile?.pis.isEmpty ?? true) const Text('No PIs captured.')
+          if (profile?.pis.isEmpty ?? true)
+            const Text('No PIs captured.')
           else
             ...profile!.pis.map((p) => Text('${p.code}: ${p.description}')),
           const Divider(height: 24),
-          const Text('Institutional Learning Outcomes (ILOs)', style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text(
+            'Institutional Learning Outcomes (ILOs)',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 6),
-          if (profile?.ilos.isEmpty ?? true) const Text('No ILOs captured.')
+          if (profile?.ilos.isEmpty ?? true)
+            const Text('No ILOs captured.')
           else
             ...profile!.ilos.map((i) => Text('• $i')),
         ],
+      ),
+    );
+  }
+}
+
+class _AccreditationTab extends StatefulWidget {
+  const _AccreditationTab({required this.programId});
+  final String programId;
+
+  @override
+  State<_AccreditationTab> createState() => _AccreditationTabState();
+}
+
+class _AccreditationTabState extends State<_AccreditationTab> {
+  final Map<String, String> accreditationStatuses = {
+    'NQF': 'NOT SUBMITTED',
+    'ABET': 'NOT SUBMITTED',
+    'AACSB': 'NOT SUBMITTED',
+    'NEASC': 'NOT SUBMITTED',
+  };
+
+  final List<String> statusOptions = [
+    'NOT SUBMITTED',
+    'AWAITING APPROVAL',
+    'APPROVED',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Accreditation Status',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Manage accreditation status for different accrediting bodies:',
+              style: TextStyle(color: Colors.black87),
+            ),
+            const SizedBox(height: 16),
+            ...accreditationStatuses.entries.map((entry) {
+              final body = entry.key;
+              final status = entry.value;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey.shade50,
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                body,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _getBodyDescription(body),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black54,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: DropdownButtonFormField<String>(
+                            value: status,
+                            decoration: const InputDecoration(
+                              labelText: 'Status',
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
+                              isDense: true,
+                            ),
+                            items: statusOptions.map((option) {
+                              return DropdownMenuItem(
+                                value: option,
+                                child: Text(
+                                  option,
+                                  style: TextStyle(
+                                    color: _getStatusColor(option),
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 12,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (newStatus) {
+                              if (newStatus != null) {
+                                setState(() {
+                                  accreditationStatuses[body] = newStatus;
+                                });
+                                _saveAccreditationStatus(body, newStatus);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Changes to accreditation status are automatically saved. Ensure all documentation is submitted before changing status.',
+                      style: const TextStyle(color: Colors.blue, fontSize: 12),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getBodyDescription(String body) {
+    switch (body) {
+      case 'NQF':
+        return 'National Qualifications Framework';
+      case 'ABET':
+        return 'Accreditation Board for Engineering and Technology';
+      case 'AACSB':
+        return 'Association to Advance Collegiate Schools of Business';
+      case 'NEASC':
+        return 'New England Association of Schools and Colleges';
+      default:
+        return '';
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'APPROVED':
+        return Colors.green;
+      case 'AWAITING APPROVAL':
+        return Colors.orange;
+      case 'NOT SUBMITTED':
+        return Colors.red;
+      default:
+        return Colors.black;
+    }
+  }
+
+  void _saveAccreditationStatus(String body, String status) {
+    // Here you would typically save to your state management system
+    // For now, we'll just show a snackbar to confirm the change
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$body accreditation status updated to: $status'),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -260,13 +549,18 @@ class _StructureTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Program Structure', style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text(
+            'Program Structure',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 8),
-          ...profile!.structures.map((s) => ListTile(
-                title: Text('${s.category}'),
-                subtitle: Text('Credits: ${s.credits}'),
-                trailing: s.graduatePortfolio ? const Text('Portfolio') : null,
-              )),
+          ...profile!.structures.map(
+            (s) => ListTile(
+              title: Text('${s.category}'),
+              subtitle: Text('Credits: ${s.credits}'),
+              trailing: s.graduatePortfolio ? const Text('Portfolio') : null,
+            ),
+          ),
         ],
       ),
     );

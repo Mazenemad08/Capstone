@@ -18,23 +18,27 @@ class AppState extends ChangeNotifier {
   final List<IssueReport> issueReports;
   final List<Meeting> meetings;
   final List<GenericReport> reports;
+  final List<User> users;
+  final List<AcademicYear> academicYears;
 
   AppState()
-      : courses = List.from(FakeData.courses),
-        courseReports = List.from(FakeData.courseReports),
-        courseReflections = List.from(FakeData.courseReflections),
-        programs = List.from(FakeData.programs),
-        programReports = List.from(FakeData.programReports),
-        programFiles = List.from(FakeData.programFiles),
-        programVersions = List.from(FakeData.programVersions),
-        programProfiles = List.from(FakeData.programProfiles),
-        moderationRequests = List.from(FakeData.moderationRequests),
-        courseEvaluations = List.from(FakeData.courseEvaluations),
-        programEvaluations = List.from(FakeData.programEvaluations),
-        issues = List.from(FakeData.issues),
-        issueReports = List.from(FakeData.issueReports),
-        meetings = List.from(FakeData.meetings),
-        reports = List.from(FakeData.reports);
+    : courses = List.from(FakeData.courses),
+      courseReports = List.from(FakeData.courseReports),
+      courseReflections = List.from(FakeData.courseReflections),
+      programs = List.from(FakeData.programs),
+      programReports = List.from(FakeData.programReports),
+      programFiles = List.from(FakeData.programFiles),
+      programVersions = List.from(FakeData.programVersions),
+      programProfiles = List.from(FakeData.programProfiles),
+      moderationRequests = List.from(FakeData.moderationRequests),
+      courseEvaluations = List.from(FakeData.courseEvaluations),
+      programEvaluations = List.from(FakeData.programEvaluations),
+      issues = List.from(FakeData.issues),
+      issueReports = List.from(FakeData.issueReports),
+      meetings = List.from(FakeData.meetings),
+      reports = List.from(FakeData.reports),
+      users = List.from(FakeData.users),
+      academicYears = List.from(FakeData.academicYears);
 
   void login() {
     isLoggedIn = true;
@@ -387,5 +391,61 @@ class AppState extends ChangeNotifier {
   int get totalCourses => courses.length;
   int get totalPrograms => programs.length;
   int get openIssues => issues.where((i) => i.status == 'Open').length;
-  int get upcomingMeetings => meetings.where((m) => m.dateTime.isAfter(DateTime.now())).length;
+  int get upcomingMeetings =>
+      meetings.where((m) => m.dateTime.isAfter(DateTime.now())).length;
+
+  // User management methods
+  User? findUser(String id) {
+    try {
+      return users.firstWhere((u) => u.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void addUser(User user) {
+    users.add(user);
+    notifyListeners();
+  }
+
+  void updateUser(String id, User updatedUser) {
+    final index = users.indexWhere((u) => u.id == id);
+    if (index != -1) {
+      users[index] = updatedUser;
+      notifyListeners();
+    }
+  }
+
+  void deleteUser(String id) {
+    users.removeWhere((u) => u.id == id);
+    notifyListeners();
+  }
+
+  // Academic year management methods
+  AcademicYear? getCurrentAcademicYear() {
+    try {
+      return academicYears.firstWhere((ay) => ay.isCurrent);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void setCurrentAcademicYear(String academicYearId) {
+    for (int i = 0; i < academicYears.length; i++) {
+      academicYears[i] = AcademicYear(
+        id: academicYears[i].id,
+        name: academicYears[i].name,
+        startDate: academicYears[i].startDate,
+        endDate: academicYears[i].endDate,
+        isCurrent: academicYears[i].id == academicYearId,
+        semesters: academicYears[i].semesters,
+      );
+    }
+    notifyListeners();
+  }
+
+  void addAcademicYear(AcademicYear academicYear) {
+    academicYears.add(academicYear);
+    notifyListeners();
+  }
 }
