@@ -491,7 +491,7 @@ class _CreateProgramPageState extends State<CreateProgramPage> {
         relatedProgramId: original.id,
         relatedCourseId: null,
         owner: 'University Success Committee',
-        priority: 'High',
+        severity: 'Major',
       );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

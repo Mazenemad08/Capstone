@@ -263,7 +263,7 @@ class Issue {
   final String? relatedCourseId;
   final String? relatedProgramId;
   final String status;
-  final String priority;
+  final String severity;
   final String createdAt;
   final String owner;
 
@@ -274,7 +274,7 @@ class Issue {
     required this.relatedCourseId,
     required this.relatedProgramId,
     required this.status,
-    required this.priority,
+    required this.severity,
     required this.createdAt,
     required this.owner,
   });
@@ -965,7 +965,7 @@ class FakeData {
       relatedCourseId: 'c1',
       relatedProgramId: 'p1',
       status: 'Open',
-      priority: 'High',
+      severity: 'Major',
       createdAt: '2024-09-10',
       owner: 'Quality Office',
     ),
@@ -976,7 +976,7 @@ class FakeData {
       relatedCourseId: null,
       relatedProgramId: 'p2',
       status: 'In Progress',
-      priority: 'Medium',
+      severity: 'Minor',
       createdAt: '2024-10-02',
       owner: 'Accreditation Lead',
     ),

@@ -20,7 +20,7 @@ class _CreateIssuePageState extends State<CreateIssuePage> {
   final involvedCtrl = TextEditingController();
   final List<TextEditingController> partyCtrls = [];
   final Set<String> selectedCommittees = {};
-  String priority = 'High';
+  String severity = 'Major';
   String status = 'Open';
 
   final List<String> committeeOptions = const [
@@ -81,7 +81,7 @@ class _CreateIssuePageState extends State<CreateIssuePage> {
       relatedCourseId: null,
       relatedProgramId: null,
       status: status,
-      priority: priority,
+      severity: severity,
       owner: ownerCtrl.text.isEmpty ? 'Quality Office' : ownerCtrl.text,
     );
     ScaffoldMessenger.of(context)
@@ -121,14 +121,13 @@ class _CreateIssuePageState extends State<CreateIssuePage> {
                     SizedBox(
                       width: 200,
                       child: DropdownButtonFormField<String>(
-                        value: priority,
-                        decoration: const InputDecoration(labelText: 'Priority'),
+                        value: severity,
+                        decoration: const InputDecoration(labelText: 'Severity'),
                         items: const [
-                          DropdownMenuItem(value: 'High', child: Text('High')),
-                          DropdownMenuItem(value: 'Medium', child: Text('Medium')),
-                          DropdownMenuItem(value: 'Low', child: Text('Low')),
+                          DropdownMenuItem(value: 'Major', child: Text('Major')),
+                          DropdownMenuItem(value: 'Minor', child: Text('Minor')),
                         ],
-                        onChanged: (val) => setState(() => priority = val ?? priority),
+                        onChanged: (val) => setState(() => severity = val ?? severity),
                       ),
                     ),
                     SizedBox(

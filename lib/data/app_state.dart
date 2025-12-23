@@ -141,7 +141,7 @@ class AppState extends ChangeNotifier {
     String? relatedCourseId,
     String? relatedProgramId,
     String status = 'Open',
-    String priority = 'Medium',
+    String severity = 'Minor',
     String owner = 'Quality Office',
   }) {
     final issue = Issue(
@@ -151,7 +151,7 @@ class AppState extends ChangeNotifier {
       relatedCourseId: relatedCourseId,
       relatedProgramId: relatedProgramId,
       status: status,
-      priority: priority,
+      severity: severity,
       createdAt: DateTime.now().toIso8601String().substring(0, 10),
       owner: owner,
     );

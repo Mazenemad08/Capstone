@@ -174,7 +174,7 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
           }
           row.descriptionCtrl.text = c.description;
           row.descriptorCtrl.text = c.descriptor;
-          row.nqfLevel = c.nqfLevel.isNotEmpty ? c.nqfLevel : 'Level 7';
+          row.nqfLevel = _normalizeNqfLevel(c.nqfLevel);
           return row;
         }),
       );
@@ -234,7 +234,7 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
           row.closCtrl.text = a.closAssessed;
           row.descriptionCtrl.text = a.description;
           row.nqfLevelCtrl.text = a.nqfLevel;
-          row.nqfLevel = a.nqfLevel.isNotEmpty ? a.nqfLevel : 'Level 7';
+          row.nqfLevel = _normalizeNqfLevel(a.nqfLevel);
           row.weightCtrl.text = a.weight;
           // Parse comma-separated CLOs back to set for editing
           if (a.closAssessed.isNotEmpty) {
@@ -292,6 +292,13 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
       default:
         return 'Knowledge';
     }
+  }
+
+  String _normalizeNqfLevel(String level) {
+    if (level.isEmpty) return 'Level 7';
+    if (level.startsWith('Level ')) return level;
+    final digits = RegExp(r'\d+').firstMatch(level)?.group(0);
+    return digits != null ? 'Level $digits' : 'Level 7';
   }
 
   List<String> _getAvailableClosOptions() {
@@ -389,7 +396,7 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
         relatedCourseId: original.id,
         relatedProgramId: null,
         status: 'Open',
-        priority: 'High',
+        severity: 'Major',
         owner: 'University Success Committee',
       );
       _showSnack('Course updated and issue created for moderation.');
@@ -1377,7 +1384,11 @@ class _CreateCoursePageState extends State<CreateCoursePage> {
                       'Attendance, credit hours policy, submission requirements, expectations, makeup rules.',
                 ),
                 const SizedBox(height: 20),
-                PrimaryButton(label: 'Create Course', onPressed: _handleSave),
+                PrimaryButton(
+                  label:
+                      widget.existingCourse == null ? 'Create Course' : 'Propose Change',
+                  onPressed: _handleSave,
+                ),
               ],
             ),
           ),

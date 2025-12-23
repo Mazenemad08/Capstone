@@ -15,7 +15,8 @@ class IssueDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final issue = context.watch<AppState>().findIssue(issueId);
     if (issue == null) return const Center(child: Text('Issue not found'));
-    final isLinked = issue.relatedCourseId != null || issue.relatedProgramId != null;
+    final isLinked =
+        issue.relatedCourseId != null || issue.relatedProgramId != null;
 
     return SingleChildScrollView(
       child: Column(
@@ -27,38 +28,47 @@ class IssueDetailPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(issue.title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                    Text(
+                      issue.title,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     Text(issue.description),
                     const SizedBox(height: 8),
                     StatusBadge(label: issue.status),
                     const SizedBox(height: 6),
-                    Text('Priority: ${issue.priority}'),
+                    Text('Severity: ${issue.severity}'),
                     Text('Owner: ${issue.owner}'),
-                    if (issue.relatedCourseId != null) Text('Course: ${issue.relatedCourseId}'),
-                    if (issue.relatedProgramId != null) Text('Program: ${issue.relatedProgramId}'),
+                    if (issue.relatedCourseId != null)
+                      Text('Course: ${issue.relatedCourseId}'),
+                    if (issue.relatedProgramId != null)
+                      Text('Program: ${issue.relatedProgramId}'),
                   ],
                 ),
               ),
-              PrimaryButton(
-                label: 'Create maintenance report',
-                icon: Icons.assignment,
-                onPressed: () => context.go('/issues/${issue.id}/report'),
-              ),
             ],
           ),
-        const SizedBox(height: 16),
-        if (isLinked) ...[
-          const Text('Issue Pipeline', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-          const SizedBox(height: 8),
-          _Pipeline(status: issue.status),
           const SizedBox(height: 16),
-        ],
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text('History / Comments', style: TextStyle(fontWeight: FontWeight.w700)),
+          if (isLinked) ...[
+            const Text(
+              'Issue Pipeline',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            _Pipeline(status: issue.status),
+            const SizedBox(height: 16),
+          ],
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  'History / Comments',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
                 SizedBox(height: 8),
                 Text('• Initial report filed by QA Officer'),
                 Text('• Pending prerequisites policy update'),
@@ -109,7 +119,12 @@ class _Pipeline extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              Text(stages[index], style: TextStyle(color: active ? Colors.green.shade700 : Colors.black54)),
+              Text(
+                stages[index],
+                style: TextStyle(
+                  color: active ? Colors.green.shade700 : Colors.black54,
+                ),
+              ),
             ],
           ),
         );

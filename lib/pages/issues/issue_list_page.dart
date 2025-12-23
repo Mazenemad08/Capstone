@@ -135,7 +135,7 @@ class _IssueCard extends StatelessWidget {
             const Spacer(),
             const Divider(),
             const SizedBox(height: 6),
-            Text('Priority: ${issue.priority}', style: const TextStyle(fontWeight: FontWeight.w600)),
+            Text('Severity: ${issue.severity}', style: const TextStyle(fontWeight: FontWeight.w600)),
             Text('Owner: ${issue.owner}', style: const TextStyle(color: Colors.black87)),
             Text('Related: $related', style: const TextStyle(color: Colors.black54)),
           ],
